@@ -22,7 +22,7 @@ app.use(morgan("common"));
 app.use(bodyParser.json({ limits: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
-app.use("/assests", express.static(path.join(__dirnamem, "public/assests")));
+app.use("/assests", express.static(path.join(__dirname, "public/assests")));
 
 /* FILE STORAGE */
 const storage = multer.diskStorage({
@@ -34,3 +34,11 @@ const storage = multer.diskStorage({
     }
 })
 const upload = multer({ storage });
+
+/* MONGOOSE SETUP */
+const PORT = process.env.PORT || 6001;
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => {
+    app.listen(PORT, () => console.log(`SERVER PORT: ${PORT}`));
+  })
+  .catch((error) => console.log(`${error} did not connect`));
