@@ -1,3 +1,4 @@
+// server/index.js
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -29,8 +30,12 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json({ limits: "30mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
+
+// For dev allow all origins. For production, replace with specific origin and credentials options.
 app.use(cors());
-app.use("/assests", express.static(path.join(__dirname, "public/assests")));
+
+// fixed folder name: assets (not assests)
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 /* FILE STORAGE */
 const storage = multer.diskStorage({
@@ -38,13 +43,18 @@ const storage = multer.diskStorage({
     cb(null, "public/assets");
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    // to avoid collisions you may want to add timestamp or unique id
+    cb(null, `${Date.now()}-${file.originalname}`);
   }
-})
+});
 const upload = multer({ storage });
 
 /* ROUTES WITH FILES  */
-app.post("/auth/register", upload.single("picture"), verifyToken, register);
+
+// Make register public (no verifyToken) — previously this route had verifyToken and returned 403 for new users.
+app.post("/auth/register", upload.single("picture"), register);
+
+// create post still requires token
 app.post("/post", verifyToken, upload.single("picture"), createPost);
 
 /* ROUTES */

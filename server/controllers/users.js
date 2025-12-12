@@ -1,3 +1,4 @@
+// server/controllers/users.js
 import User from "../models/User.js";
 
 /* READ */
@@ -18,7 +19,7 @@ export const getUserFriends = async (req, res) => {
         const { id } = req.params;
         const user = await User.findById(id);
         const friends = await Promise.all(
-            user.friends.map((id) => User.findById(id))
+            user.friends.map((fid) => User.findById(fid))
         );
         const formattedFriends = friends.map(
             ({ _id, firstName, lastName, occupation, location, picturePath }) => {
@@ -36,23 +37,23 @@ export const getUserFriends = async (req, res) => {
 /* UPDATE */
 export const addRemoveFriend = async (req, res) => {
     try {
-        const { id, friendId } = req.params;
-        const user = await User.findById(id);
+        const { id: userId, friendId } = req.params;
+        const user = await User.findById(userId);
         const friend = await User.findById(friendId);
 
         if (user.friends.includes(friendId)) {
-            user.friends = user.friends.filter((id) => id !== friendId);
-            friend.friends = friend.friends.filter((id) => id !== id);
+            user.friends = user.friends.filter((fid) => fid !== friendId);
+            friend.friends = friend.friends.filter((fid) => fid !== userId);
         } else {
             user.friends.push(friendId);
-            friend.friends.push(id);
+            friend.friends.push(userId);
         }
 
         await user.save();
         await friend.save();
 
         const friends = await Promise.all(
-            user.friends.map((id) => User.findById(id))
+            user.friends.map((fid) => User.findById(fid))
         );
         const formattedFriends = friends.map(
             ({ _id, firstName, lastName, occupation, location, picturePath }) => {
@@ -61,7 +62,7 @@ export const addRemoveFriend = async (req, res) => {
         );
 
         res.status(200).json(formattedFriends);
-    } catch (error) {
+    } catch (err) {
         res.status(404).json({ message: err.message });
     }
 }
