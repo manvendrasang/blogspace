@@ -25,4 +25,4 @@ export const verifyToken = (req, res, next) => {
         console.error("verifyToken error:", err);
         return res.status(500).json({ error: err.message });
     }
-}
+};
